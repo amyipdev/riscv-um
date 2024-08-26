@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+# Can be removed once Rust 2024 is stabilized
+cargo-features = ["edition2024"]
+
+[package]
+name = "riscv-um"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
