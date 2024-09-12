@@ -1,11 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-# Can be removed once Rust 2024 is stabilized
 cargo-features = ["edition2024"]
 
 [package]
 name = "riscv-um"
+description = "RISC-V user mode emulator"
+authors = ["Amy Parker <amy@amyip.net>"]
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4.5.16", features = ["derive"] }
+colored = "2.1.0"
+
+[workspace]
+members = ["emu_tests/riscv64gc/compiler"]

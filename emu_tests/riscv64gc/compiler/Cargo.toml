@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+cargo-features = ["edition2024", "per-package-target"]
+
+[package]
+name = "emutest-rv64gc-compiler"
+version = "0.1.0"
+edition = "2024"
+forced-target = "riscv64gc-unknown-linux-gnu"
+
+[dependencies]

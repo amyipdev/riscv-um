@@ -1,25 +1,34 @@
 with import <nixpkgs> {};
 
 let
-  src = fetchFromGitHub {
-    owner = "mozilla";
-    repo = "nixpkgs-mozilla";
-    rev = "9b11a87c0cc54e308fa83aac5b4ee1816d5418a2";
-    sha256 = "+gi59LRWRQmwROrmE1E2b3mtocwueCQqZ60CwLG+gbg=";
+  fenix = import (fetchTarball "https://github.com/nix-community/fenix/archive/main.tar.gz") {};
+  combined = fenix.combine [
+    fenix.complete.toolchain
+    fenix.targets.riscv64gc-unknown-linux-gnu.latest.toolchain
+    #fenix.targets.riscv64gc-unknown-none-elf.latest.rust-std
+  ];
+  riscv-toolchain = import <nixpkgs> {
+    localSystem = "${system}";
+    crossSystem = {
+      config = "riscv64-unknown-linux-gnu";
+    };
   };
-
 in
-
-with import "${src.out}/rust-overlay.nix" pkgs pkgs;
 
 stdenv.mkDerivation {
   name = "riscv-um-env";
-  buildInputs = [
-    latest.rustChannels.nightly.rust
-
-    # qemu-user doesn't exist until 24.11
+  nativeBuildInputs = [
+    #fenix.combine [
+      #fenix.complete.toolchain
+      #fenix.targets.riscv32i-unknown-none-elf.latest.toolchain
+    #]
+    combined
     qemu
-
+    riscv-toolchain.buildPackages.gcc
+    # qemu-user doesn't exist until 24.11
     # pkg-config openssl
   ];
+  shellHook = ''
+    alias cargo-rv64="RUSTFLAGS=\"-C linker=riscv64-unknown-linux-gnu-gcc\" cargo"
+  '';
 }
