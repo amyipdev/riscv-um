@@ -24,6 +24,7 @@ stdenv.mkDerivation {
     #]
     combined
     qemu
+    strace
     riscv-toolchain.buildPackages.gcc
     # qemu-user doesn't exist until 24.11
     # pkg-config openssl

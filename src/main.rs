@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+mod mm;
 mod utils;
 
 use clap::Parser;
 
-use utils::terminal_error;
 use utils::ConvertibleError;
+use utils::terminal_error;
 
 static ABOUT_MSG: &'static str = "riscv-um: user mode RISC-V emulator
 Copyright (c) 2024 Amy Parker <amy@amyip.net>
@@ -31,22 +32,19 @@ struct Args {
     /// Display copyright and program information
     #[arg(short, long)]
     about: bool,
-    /// CPU type and instruction set
+    /// CPU type and instruction set (unimplemented)
     #[arg(short, long)]
     cpu: Option<String>,
-    /// Set maximum program memory allocation
+    /// Set maximum program memory allocation (unimplemented)
     #[arg(short, long)]
     mem: Option<usize>,
-    /// Disable emulator memory paging
-    #[arg(short = 'p', long)]
-    nopaging: bool,
     filename: Option<String>,
 }
 
 fn main() {
     // Command line argument handling
     // TODO: profile how long this part takes
-    let args = Args::parse();
+    /*let args = Args::parse();
     if args.about {
         println!("{}", ABOUT_MSG);
         std::process::exit(0);
@@ -55,10 +53,38 @@ fn main() {
         terminal_error("No executable specified");
     }
 
+    // Load ELF
     let path = std::path::PathBuf::from(&args.filename.unwrap());
     if !path.exists() {
         terminal_error("No such file or directory");
     }
     let fc = std::fs::read(&path).e("Error reading file");
     // check for ELF
+    if fc.len() < 4 || !(fc[0] == 0x7f && fc[1] == b'E' && fc[2] == b'L' && fc[3] == b'F') {
+        terminal_error("Non-ELF executables are currently not supported");
+    }
+    let elf_f = elf::ElfBytes::<elf::endian::LittleEndian>::minimal_parse(&fc)
+        .e("Unable to parse ELF file");
+
+    // Check that the file is RISC-V 64, Linux
+    if elf_f.ehdr.class != elf::file::Class::ELF64 {
+        terminal_error("32-bit ELF files are not supported");
+    }
+    if elf_f.ehdr.osabi != elf::abi::ELFOSABI_SYSV {
+        terminal_error("File is not linked for Unix System V ABI");
+    }
+    if elf_f.ehdr.e_machine != elf::abi::EM_RISCV {
+        terminal_error("File architecture is not RISC-V");
+    }
+    */
+    let mut mem = mm::MemoryMap::new();
+    let mut local_access = mem.clone();
+    let mut mema = mem.lock().unwrap();
+    // Memory demo
+    let addr = 0x8000;
+    let byte = 0x41;
+    //mema.allocate_known_page(addr);
+    //mema.writebyte(addr, byte);
+    //println!("Reading {:#x}, loaded {:#x}", addr, mema.readbyte(addr).unwrap());
+
 }

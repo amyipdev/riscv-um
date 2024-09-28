@@ -1,0 +1,84 @@
+execve("target/release/riscv-um", ["target/release/riscv-um", "tmp/test"], 0x7fff806be5d8 /* 80 vars */) = 0
+brk(NULL)                               = 0x55fac6035000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fcc87004000
+access("/etc/ld-nix.so.preload", R_OK)  = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v4/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v4/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v3/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v3/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v2/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/glibc-hwcaps/x86-64-v2/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/67wfyj8yg79xci33wjfvbjay8qnxnvag-riscv-um-env/lib/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v4/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v4/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v3/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v3/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v2/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/glibc-hwcaps/x86-64-v2/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/", {st_mode=S_IFDIR|0555, st_size=1140, ...}, 0) = 0
+openat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v4/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v4/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v3/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v3/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v2/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+newfstatat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/glibc-hwcaps/x86-64-v2/", 0x7ffca9fd5150, 0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/nix/store/dffyikn59cy7fff2qd60gs9jl63szqnh-xgcc-13.3.0-libgcc/lib/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0444, st_size=158840, ...}) = 0
+mmap(NULL, 147944, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fcc86fdf000
+mmap(0x7fcc86fe3000, 110592, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x4000) = 0x7fcc86fe3000
+mmap(0x7fcc86ffe000, 16384, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1f000) = 0x7fcc86ffe000
+mmap(0x7fcc87002000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x22000) = 0x7fcc87002000
+close(3)                                = 0
+openat(AT_FDCWD, "/nix/store/0wydilnf1c9vznywsvxqnaing4wraaxp-glibc-2.39-52/lib/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\20\243\2\0\0\0\0\0"..., 832) = 832
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+fstat(3, {st_mode=S_IFREG|0555, st_size=2326560, ...}) = 0
+pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+mmap(NULL, 2059664, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fcc86de8000
+mmap(0x7fcc86e10000, 1466368, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x7fcc86e10000
+mmap(0x7fcc86f76000, 352256, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x18e000) = 0x7fcc86f76000
+mmap(0x7fcc86fcc000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e3000) = 0x7fcc86fcc000
+mmap(0x7fcc86fd2000, 52624, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fcc86fd2000
+close(3)                                = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fcc86de5000
+arch_prctl(ARCH_SET_FS, 0x7fcc86de5780) = 0
+set_tid_address(0x7fcc86de5a50)         = 1944610
+set_robust_list(0x7fcc86de5a60, 24)     = 0
+rseq(0x7fcc86de60a0, 0x20, 0, 0x53053053) = 0
+mprotect(0x7fcc86fcc000, 16384, PROT_READ) = 0
+mprotect(0x7fcc87002000, 4096, PROT_READ) = 0
+mprotect(0x55fa93d20000, 12288, PROT_READ) = 0
+mprotect(0x7fcc87040000, 8192, PROT_READ) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=9788*1024, rlim_max=RLIM64_INFINITY}) = 0
+poll([{fd=0, events=0}, {fd=1, events=0}, {fd=2, events=0}], 3, 0) = 0 (Timeout)
+rt_sigaction(SIGPIPE, {sa_handler=SIG_IGN, sa_mask=[PIPE], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7fcc86e285c0}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+getrandom("\x3c\x6d\x26\x80\xfb\x85\xc7\x8c", 8, GRND_NONBLOCK) = 8
+brk(NULL)                               = 0x55fac6035000
+brk(0x55fac6056000)                     = 0x55fac6056000
+openat(AT_FDCWD, "/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=9788*1024, rlim_max=RLIM64_INFINITY}) = 0
+fstat(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+read(3, "55fa93ccc000-55fa93cdf000 r--p 0"..., 1024) = 1024
+read(3, "39-52/lib/libc.so.6\n7fcc86fcc000"..., 1024) = 1024
+read(3, "7598                    /nix/sto"..., 1024) = 1024
+read(3, "ydilnf1c9vznywsvxqnaing4wraaxp-g"..., 1024) = 235
+close(3)                                = 0
+sched_getaffinity(1944610, 32, [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]) = 8
+rt_sigaction(SIGSEGV, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+sigaltstack(NULL, {ss_sp=NULL, ss_flags=SS_DISABLE, ss_size=0}) = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_STACK, -1, 0) = 0x7fcc86de2000
+mprotect(0x7fcc86de2000, 4096, PROT_NONE) = 0
+sigaltstack({ss_sp=0x7fcc86de3000, ss_flags=0, ss_size=8192}, NULL) = 0
+rt_sigaction(SIGSEGV, {sa_handler=0x55fa93d017e0, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7fcc86e285c0}, NULL, 8) = 0
+rt_sigaction(SIGBUS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGBUS, {sa_handler=0x55fa93d017e0, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7fcc86e285c0}, NULL, 8) = 0
+mmap(NULL, 16785408, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fcc85c00000
+munmap(0x7fcc85c00000, 16785408)        = 0
+sigaltstack({ss_sp=NULL, ss_flags=SS_DISABLE, ss_size=8192}, NULL) = 0
+munmap(0x7fcc86de2000, 12288)           = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
