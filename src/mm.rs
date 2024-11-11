@@ -21,7 +21,7 @@ impl MemoryMap {
         let l1i = ((page >> 24) & 16383) as usize;
         if self.l1[l1i].is_none() {
             self.l1[l1i] = Some(L2Table {
-                ents: Box::new([const { None }; 4096])
+                ents: Box::new([const { None }; 4096]),
             });
         }
         let l2a = self.l1[l1i].as_mut().unwrap();
@@ -32,6 +32,17 @@ impl MemoryMap {
             return true;
         }
         return false;
+    }
+    /// Pass an address range to get all pages within it allocated.
+    pub(crate) fn allocate_address_range(&mut self, start_address: u64, size: u64) -> bool {
+        let base = start_address >> 12;
+        let top = (start_address + size) >> 12;
+        for i in base..top + 1 {
+            if !self.allocate_known_page(i << 12) {
+                return false;
+            }
+        }
+        return true;
     }
     #[inline(always)]
     pub(crate) fn writebyte(&mut self, addr: u64, byte: u8) -> bool {
@@ -62,7 +73,7 @@ impl MemoryMap {
     pub(crate) fn readhword(&self, addr: u64) -> Option<u16> {
         if addr & 1 != 0 && addr & 0xfff > 0xffe {
             let lh = self.readbyte(addr);
-            let uh = self.readbyte(addr+1);
+            let uh = self.readbyte(addr + 1);
             if let Some(b0) = lh {
                 if let Some(b1) = uh {
                     return Some((b1 as u16) << 8 + b0 as u16);
@@ -88,7 +99,7 @@ impl MemoryMap {
     pub(crate) fn readword(&self, addr: u64) -> Option<u32> {
         if addr & 3 != 0 && addr & 0xfff > 0xffc {
             let lh = self.readhword(addr);
-            let uh = self.readhword(addr+2);
+            let uh = self.readhword(addr + 2);
             if let Some(b0) = lh {
                 if let Some(b1) = uh {
                     return Some((b1 as u32) << 16 + b0 as u32);
@@ -114,7 +125,7 @@ impl MemoryMap {
     pub(crate) fn readdword(&self, addr: u64) -> Option<u64> {
         if addr & 3 != 0 && addr & 0xfff > 0xffc {
             let lh = self.readword(addr);
-            let uh = self.readword(addr+4);
+            let uh = self.readword(addr + 4);
             if let Some(b0) = lh {
                 if let Some(b1) = uh {
                     return Some((b1 as u64) << 16 + b0 as u64);

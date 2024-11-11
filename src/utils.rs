@@ -14,6 +14,18 @@ pub(crate) trait ConvertibleError<T> {
     fn e(self, msg: &str) -> T;
 }
 
+pub(crate) fn write_register_safe(reg: &mut [u64; 32], reg_num: usize, val: u64) -> () {
+    if reg_num != 0 {
+        reg[reg_num] = val;
+    }
+}
+
+pub(crate) fn sign_extend_12(val: u64) -> u64 {
+    let b = (val >> 11) & 1;
+    let m = b * !0u64 << 11;
+    (val & 0x7ff) | m
+}
+
 pub(crate) fn extract_u16_from_page(array: &[u8; 4096], start: usize) -> u16 {
     let bytes = array_ref![array, start, 2];
     u16::from_le_bytes(*bytes)
