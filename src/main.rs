@@ -44,7 +44,7 @@ struct Args {
 fn main() {
     // Command line argument handling
     // TODO: profile how long this part takes
-    /*let args = Args::parse();
+    let args = Args::parse();
     if args.about {
         println!("{}", ABOUT_MSG);
         std::process::exit(0);
@@ -76,15 +76,15 @@ fn main() {
     if elf_f.ehdr.e_machine != elf::abi::EM_RISCV {
         terminal_error("File architecture is not RISC-V");
     }
-    */
+
     let mut mem = mm::MemoryMap::new();
     let mut local_access = mem.clone();
     let mut mema = mem.lock().unwrap();
     // Memory demo
     let addr = 0x8000;
     let byte = 0x41;
-    //mema.allocate_known_page(addr);
-    //mema.writebyte(addr, byte);
-    //println!("Reading {:#x}, loaded {:#x}", addr, mema.readbyte(addr).unwrap());
+    mema.allocate_known_page(addr);
+    mema.writebyte(addr, byte);
+    println!("Reading {:#x}, loaded {:#x}", addr, mema.readbyte(addr).unwrap());
 
 }
