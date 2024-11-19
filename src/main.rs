@@ -84,8 +84,35 @@ fn main() {
     let mut mema = mem.lock().unwrap();
 
     // Load ELF data into memory; TODO make this faster, this memory system sucks
-    // For POC, we assume .text+0x0 is the start instead of entry+0x0 or _start+0x0
     // a real emulator would need more complex logic here
+    let mut shs = elf_f.section_headers();
+    if shs.is_none() {
+        terminal_error("No ELF sections");
+    }
+    for shr in shs.unwrap().iter() {
+        let data = elf_f
+            .section_data(&shr)
+            .e("Failed to get section data");
+        if data.1.is_some() {
+            terminal_error("ELF compression is not yet supported");
+        }
+        // Incomplete: other sections may need to be loaded and read
+        if shr.sh_type != 0x1 {
+            continue;
+        }
+        let entry_address = shr.sh_addr;
+        let text_size = shr.sh_size;
+        println!("{}, {}", entry_address, text_size);
+        mema.allocate_address_range(entry_address, text_size);
+        /*
+        if !mema.allocate_address_range(entry_address, text_size) {
+            terminal_error("Failed to allocate program space");
+        }*/
+        for (i, b) in data.0.into_iter().enumerate() {
+            mema.writebyte(entry_address + (i as u64), *b);
+        }
+    }
+    /*
     let sh = elf_f
         .section_header_by_name(".text")
         .e("ELF parsing error")
@@ -106,7 +133,18 @@ fn main() {
     // Load program binary!!
     for (i, b) in data.0.into_iter().enumerate() {
         mema.writebyte(entry_address + (i as u64), *b);
-    }
+    }*/
+    let entry_address = 'L0: {
+        let data = elf_f.symbol_table().e("Failed to get symbol table").ok_or(elf::parse::ParseError::UnexpectedSectionType((0, 0))).e("Symbol table is empty");
+        for sym in data.0 {
+            if let Ok(v) = data.1.get(sym.st_name as usize) {
+                if v == "_start" {
+                    break 'L0 sym.st_value;
+                }
+            }
+        }
+        terminal_error("Could not find _start")
+    };
 
     // allocate 2 MiB stack
     let stack_size = 1 << 20;
@@ -166,17 +204,59 @@ fn main() {
             let dst = ((isn & 0x00000f80) >> 7) as usize;
             let prefetch = registers[src];
             match fct {
-                0x0000 => {
+                0 => {
                     println!("addi");
                     utils::write_register_safe(registers, dst, prefetch + utils::sign_extend_12(imm));
                 },
-                0x1000 => {},
-                0x2000 => {},
-                0x3000 => {},
-                0x4000 => {},
-                0x5000 => {},
-                0x6000 => {},
-                0x7000 => {},
+                1 => {},
+                2 => {},
+                3 => {},
+                4 => {},
+                5 => {},
+                6 => {},
+                7 => {},
+                _ => unimplemented!()
+            }
+            *pc += 4;
+        }),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|isn, mem, registers, pc| {
+            // opcode = 0100011 - S-type
+            let dst = ((((isn & 0xfe000000) >> 25) as u64) | (((isn & 0x00000f80) >> 7) as u64)) + registers[((isn & 0x000f8000) >> 15) as usize];
+            let src = ((isn & 0x01f00000) >> 20) as usize;
+            let fct = (isn & 0x00007000) >> 12;
+            match fct {
+                0 => {},
+                1 => {},
+                2 => {},
+                3 => {
+                    println!("sd");
+                    for (i, n) in registers[src].to_le_bytes().into_iter().enumerate() {
+                        if !mem.writebyte(dst+(i as u64), n) {
+                            unsafe {
+                                libc::raise(11);
+                            }
+                        }
+                    }
+                },
+                4 => {},
+                5 => {},
+                6 => {},
+                7 => {},
                 _ => unimplemented!()
             }
             *pc += 4;
@@ -256,23 +336,18 @@ fn main() {
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|isn, _, registers, pc| {
+            // opcode = 1101111 - J-type
+            println!("jal {}, {}", *pc, isn);
+            let rd = (isn & 0x00000f80) >> 7;
+            registers[rd as usize] = *pc + 4;
+            let imm =
+                ((isn & 0x8000_0000) >> 11)
+                | ((isn & 0x7fe0_0000) >> 20)
+                | ((isn & 0x0010_0000) >> 9)
+                | ((isn & 0x000f_f000));
+            *pc = *pc + utils::sign_extend_20(imm as u64);
+        }),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
@@ -320,7 +395,7 @@ fn main() {
         // No compressed instruction support
         let isn = match mema.readword(pc) {
             Some(v) => v,
-            None => terminal_error("sigsegv")
+            None => unsafe { libc::raise(11) as u32 }
         };
         opcode_table[isn as usize & 0x7f](isn, &mut mema, &mut registers, &mut pc);
     }

@@ -26,6 +26,12 @@ pub(crate) fn sign_extend_12(val: u64) -> u64 {
     (val & 0x7ff) | m
 }
 
+pub(crate) fn sign_extend_20 (val: u64) -> u64 {
+    let b = (val >> 19) & 1;
+    let m = b * !0u64 << 19;
+    (val & 0xfffff) | m
+}
+
 pub(crate) fn extract_u16_from_page(array: &[u8; 4096], start: usize) -> u16 {
     let bytes = array_ref![array, start, 2];
     u16::from_le_bytes(*bytes)
