@@ -206,6 +206,10 @@ fn main() {
             match fct {
                 0 => {
                     println!("addi");
+                    // DEBUG
+                    if dst == 15 {
+                        println!("a5 = {} + {} = 0x{:x?}", registers[src], imm, registers[src] + imm);
+                    }
                     utils::write_register_safe(registers, dst, prefetch + utils::sign_extend_12(imm));
                 },
                 1 => {},
@@ -248,6 +252,7 @@ fn main() {
                     for (i, n) in registers[src].to_le_bytes().into_iter().enumerate() {
                         if !mem.writebyte(dst+(i as u64), n) {
                             unsafe {
+                                println!("dst=0x{:x?},i={},n={}", dst, i, n);
                                 libc::raise(11);
                             }
                         }
@@ -276,11 +281,47 @@ fn main() {
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|isn, _, registers, pc| {
+            let src1 = ((isn & 0x000f8000) >> 15) as usize;
+            let pf1 = registers[src1];
+            let src2 = ((isn & 0x01f00000) >> 20) as usize;
+            let mut pf2 = registers[src2];
+            let fct = (isn & 0x00007000) >> 12;
+            let dst = ((isn & 0x00000f80) >> 7) as usize;
+            match fct {
+                0 => {
+                    println!("add/sub");
+                    if isn & 0x4000_0000 != 0 {
+                        pf2 = 0 - pf2;
+                    }
+                    if dst == 15 {
+                        println!("a5 = {:x?} + {:x?} = 0x{:x?}", pf1, pf2, pf1 + pf2);
+                    }
+                    utils::write_register_safe(registers, dst, pf1 + pf2);
+                },
+                1 => {},
+                2 => {},
+                3 => {},
+                4 => {},
+                5 => {},
+                6 => {},
+                7 => {},
+                _ => unimplemented!()
+            }
+            *pc += 4;
+        }),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
-        Box::new(|_, _, _, _| unimplemented!()),
+        Box::new(|isn, _, registers, pc| {
+            println!("lui");
+            let rd = ((isn & 0x00000f80) >> 7) as usize;
+            let val = (isn & 0xfffff000) as u64;
+            utils::write_register_safe(registers, rd,
+                                       utils::sign_extend_32((registers[rd] & 0x0000_0fff) | val)
+            );
+            *pc += 4;
+        }),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
@@ -340,7 +381,7 @@ fn main() {
             // opcode = 1101111 - J-type
             println!("jal {}, {}", *pc, isn);
             let rd = (isn & 0x00000f80) >> 7;
-            registers[rd as usize] = *pc + 4;
+            utils::write_register_safe(registers, rd as usize, *pc + 4);
             let imm =
                 ((isn & 0x8000_0000) >> 11)
                 | ((isn & 0x7fe0_0000) >> 20)

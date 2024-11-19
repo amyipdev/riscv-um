@@ -14,22 +14,32 @@ pub(crate) trait ConvertibleError<T> {
     fn e(self, msg: &str) -> T;
 }
 
+#[inline(always)]
 pub(crate) fn write_register_safe(reg: &mut [u64; 32], reg_num: usize, val: u64) -> () {
     if reg_num != 0 {
         reg[reg_num] = val;
     }
 }
 
+#[inline(always)]
 pub(crate) fn sign_extend_12(val: u64) -> u64 {
     let b = (val >> 11) & 1;
     let m = b * !0u64 << 11;
     (val & 0x7ff) | m
 }
 
-pub(crate) fn sign_extend_20 (val: u64) -> u64 {
+#[inline(always)]
+pub(crate) fn sign_extend_20(val: u64) -> u64 {
     let b = (val >> 19) & 1;
     let m = b * !0u64 << 19;
     (val & 0xfffff) | m
+}
+
+#[inline(always)]
+pub(crate) fn sign_extend_32(val: u64) -> u64 {
+    let b = (val >> 31) & 1;
+    let m = b * !0u64 << 31;
+    (val & 0xffff_ffff) | m
 }
 
 pub(crate) fn extract_u16_from_page(array: &[u8; 4096], start: usize) -> u16 {
