@@ -6,19 +6,19 @@ use std::sync::{Arc, Mutex};
 
 // 38-bit memory mapping
 pub(crate) struct MemoryMap {
-    pub l1: Box<[Option<L2Table>; 16384]>,
+    pub l1: Box<[Option<L2Table>; 32768]>,
     pub total_pages_alloc: usize,
 }
 impl MemoryMap {
     pub(crate) fn new() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Self {
-            l1: Box::new([const { None }; 16384]),
+            l1: Box::new([const { None }; 32768]),
             total_pages_alloc: 0,
         }))
     }
     /// Pass any address within the page to allocate it.
     pub(crate) fn allocate_known_page(&mut self, page: u64) -> bool {
-        let l1i = ((page >> 24) & 16383) as usize;
+        let l1i = (page >> 24) as usize;
         if self.l1[l1i].is_none() {
             self.l1[l1i] = Some(L2Table {
                 ents: Box::new([const { None }; 4096]),
@@ -36,8 +36,8 @@ impl MemoryMap {
     /// Pass an address range to get all pages within it allocated.
     pub(crate) fn allocate_address_range(&mut self, start_address: u64, size: u64) -> bool {
         let base = start_address >> 12;
-        let top = (start_address + size) >> 12;
-        for i in base..top + 1 {
+        let top = ((start_address + size) >> 12) + if size << 52 != 0 {1} else {0};
+        for i in base..top {
             if !self.allocate_known_page(i << 12) {
                 return false;
             }
@@ -46,7 +46,7 @@ impl MemoryMap {
     }
     #[inline(always)]
     pub(crate) fn writebyte(&mut self, addr: u64, byte: u8) -> bool {
-        if let Some(ref mut l2) = self.l1[((addr >> 24) & 16383) as usize] {
+        if let Some(ref mut l2) = self.l1[(addr >> 24) as usize] {
             if let Some(ref mut l3) = l2.ents[((addr >> 12) & 0xfff) as usize] {
                 l3[(addr & 0xfff) as usize] = byte;
                 return true;
@@ -59,7 +59,7 @@ impl MemoryMap {
     }
     #[inline(always)]
     pub(crate) fn readbyte(&self, addr: u64) -> Option<u8> {
-        if let Some(ref l2) = self.l1[((addr >> 24) & 16383) as usize] {
+        if let Some(ref l2) = self.l1[(addr >> 24) as usize] {
             if let Some(ref l3) = l2.ents[((addr >> 12) & 0xfff) as usize] {
                 return Some(l3[(addr & 0xfff) as usize]);
             } else {

@@ -25,7 +25,14 @@ pub(crate) fn write_register_safe(reg: &mut [u64; 32], reg_num: usize, val: u64)
 pub(crate) fn sign_extend_12(val: u64) -> u64 {
     let b = (val >> 11) & 1;
     let m = b * !0u64 << 11;
-    (val & 0x7ff) | m
+    (val & 0xfff) | m
+}
+
+#[inline(always)]
+pub(crate) fn sign_extend_13(val: u64) -> u64 {
+    let b = (val >> 12) & 1;
+    let m = b * !0u64 << 12;
+    (val & 0x1fff) | m
 }
 
 #[inline(always)]
