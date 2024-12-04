@@ -43,6 +43,13 @@ pub(crate) fn sign_extend_20(val: u64) -> u64 {
 }
 
 #[inline(always)]
+pub(crate) fn sign_extend_21(val: u64) -> u64 {
+    let b = (val >> 20) & 1;
+    let m = b * !0u64 << 20;
+    (val & 0x1fffff) | m
+}
+
+#[inline(always)]
 pub(crate) fn sign_extend_32(val: u64) -> u64 {
     let b = (val >> 31) & 1;
     let m = b * !0u64 << 31;
