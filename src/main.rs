@@ -2,6 +2,9 @@
 
 #![feature(vec_into_raw_parts)]
 
+#[cfg(not(target_endian = "little"))]
+compile_error!("Host architecture must be little endian");
+
 mod mm;
 mod utils;
 
@@ -27,6 +30,9 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.";
+
+const stack_size: u64 = 1 << 20;
+const stack_bottom: u64 = (1 << 39) - stack_size;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -81,9 +87,11 @@ fn main() {
     }
 
     // Done this way for future development - cross-thread memory sharing
-    let mut mem = mm::MemoryMap::new();
-    let mut local_access = mem.clone();
-    let mut mema = mem.lock().unwrap();
+    //let mut mem = mm::MemoryMap::new();
+    //let mut local_access = mem.clone();
+    //let mut mema = mem.lock().unwrap();
+    let mema: *mut libc::c_void = unsafe {libc::mmap(0 as *mut libc::c_void, 1 << 24, libc::PROT_READ | libc::PROT_WRITE, libc::MAP_PRIVATE | libc::MAP_ANONYMOUS, -1, 0)};
+    unsafe { libc::madvise(mema, 1 << 24, libc::MADV_HUGEPAGE); }
 
     // Load ELF data into memory; TODO make this faster, this memory system sucks
     // a real emulator would need more complex logic here
@@ -102,14 +110,14 @@ fn main() {
         }
         let entry_address = shr.sh_addr;
         let text_size = shr.sh_size;
-        mema.allocate_address_range(entry_address, text_size);
         /*
         if !mema.allocate_address_range(entry_address, text_size) {
             terminal_error("Failed to allocate program space");
         }*/
-        for (i, b) in data.0.into_iter().enumerate() {
-            mema.writebyte(entry_address + (i as u64), *b);
-        }
+        unsafe { libc::memcpy(mema.byte_offset(entry_address as isize) as *mut libc::c_void, data.0.as_ptr() as *const libc::c_void, text_size as libc::size_t); }
+        //for (i, b) in data.0.into_iter().enumerate() {
+        //    mema.writebyte(entry_address + (i as u64), *b);
+        //}
     }
     /*
     let sh = elf_f
@@ -150,8 +158,7 @@ fn main() {
     };
 
     // allocate 2 MiB stack
-    let stack_size = 1 << 20;
-    mema.allocate_address_range((1 << 39) - stack_size, stack_size);
+    //mema.allocate_address_range((1 << 39) - stack_size, stack_size);
 
     // registers initialization
     let mut registers: [u64; 32] = [0u64; 32];
@@ -179,7 +186,7 @@ fn main() {
 
     // Main CPU loop
     // TODO: factor opcode table out into separate file
-    let opcode_table: [Box<dyn Fn(u32, &mut mm::MemoryMap, &mut [u64; 32], &mut u64) -> ()>; 128] = [
+    let opcode_table: [Box<dyn Fn(u32, *mut libc::c_void, &mut [u64; 32], &mut u64) -> ()>; 128] = [
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
         Box::new(|_, _, _, _| unimplemented!()),
@@ -191,24 +198,16 @@ fn main() {
             let addr = registers[rs] + utils::sign_extend_12(imm);
             match fct {
                 2 => {
-                    if let Some(r) = mem.readword(addr) {
                         //println!("lw %{},0x${:x?} = {}", rd, addr, r);
                         utils::write_register_safe(
                             registers,
                             rd,
-                            utils::sign_extend_32(r as u64)
+                            utils::sign_extend_32(unsafe {*(adt(addr, mem) as *const u32) as u64})
                         );
-                    } else {
-                        unsafe {libc::raise(11)};
-                    }
                 }
                 3 => {
-                    if let Some(r) = mem.readdword(addr) {
                         //println!("ld %{},0x${:x?} = {}", rd, addr, r);
-                        utils::write_register_safe(registers, rd, r);
-                    } else {
-                        unsafe {libc::raise(11)};
-                    }
+                    utils::write_register_safe(registers, rd, unsafe {*(adt(addr, mem) as *const u64)});
                 }
                 _ => unimplemented!()
             }
@@ -315,7 +314,7 @@ fn main() {
                     utils::write_register_safe(
                         registers,
                         dst,
-                        utils::sign_extend_32((prefetch + (imm as u32)) as u64),
+                        utils::sign_extend_32((prefetch + (utils::sign_extend_12(imm) as u32)) as u64),
                     );
                 }
                 1 => {
@@ -357,32 +356,35 @@ fn main() {
             match fct {
                 0 => {
                     //println!("sb ${:x?},%{} = 0x{:x?}", dst, src, registers[src] as u8);
-                    if !mem.writebyte(dst, registers[src] as u8) {
-                        unsafe {
-                            libc::raise(11);
-                        }
-                    }
+                    unsafe {*(adt(dst, mem) as *mut u8) = registers[src] as u8};
+                    //if !mem.writebyte(dst, registers[src] as u8) {
+                    //    unsafe {
+                    //        libc::raise(11);
+                    //    }
+                    //}
                 },
                 1 => unimplemented!(),
                 2 => {
                     //println!("sw ${:x?},%{} = 0x{:x?}", dst, src, registers[src] as u32);
-                    for (i, n) in (registers[src] as u32).to_le_bytes().into_iter().enumerate() {
+                    unsafe {*(adt(dst, mem) as *mut u32) = registers[src] as u32};
+                    /*for (i, n) in (registers[src] as u32).to_le_bytes().into_iter().enumerate() {
                         if !mem.writebyte(dst + (i as u64), n) {
                             unsafe {
                                 libc::raise(11);
                             }
                         }
-                    }
+                    }*/
                 },
                 3 => {
                     //println!("sd ${:x?},%{} = 0x{:x?}", dst, src, registers[src]);
-                    for (i, n) in registers[src].to_le_bytes().into_iter().enumerate() {
+                    unsafe {*(adt(dst, mem) as *mut u64) = registers[src]};
+                    /*for (i, n) in registers[src].to_le_bytes().into_iter().enumerate() {
                         if !mem.writebyte(dst + (i as u64), n) {
                             unsafe {
                                 libc::raise(11);
                             }
                         }
-                    }
+                    }*/
                 }
                 4 => unimplemented!(),
                 5 => unimplemented!(),
@@ -422,7 +424,10 @@ fn main() {
                     //println!("add/sub d%{},%{},%{} = 0x{:x?}", dst, src1, src2, pf1 + pf2);
                     utils::write_register_safe(registers, dst, pf1 + pf2);
                 }
-                1 => unimplemented!(),
+                1 => {
+                    //println!("sll d%{},%{}={:x?},%{}=m{:x?} = 0x{:x?}", dst, src1, pf1, src2, pf2, pf1 << pf2);
+                    utils::write_register_safe(registers, dst, pf1 << pf2)
+                }
                 2 => unimplemented!(),
                 3 => unimplemented!(),
                 4 => unimplemented!(),
@@ -439,7 +444,7 @@ fn main() {
         Box::new(|isn, _, registers, pc| {
             let rd = ((isn & 0x00000f80) >> 7) as usize;
             let val = (isn & 0xfffff000) as u64;
-            //println!("lui %{},0x{}", rd, utils::sign_extend_32(val));
+            //println!("lui %{},0x{:x?}", rd, utils::sign_extend_32(val));
             utils::write_register_safe(
                 registers,
                 rd,
@@ -525,7 +530,7 @@ fn main() {
             let rs1 = ((isn & 0x000f_8000) >> 15) as usize;
             let pf2 = registers[rs2];
             let pf1 = registers[rs1];
-            //println!("branch {}, 1=%{}={:x?},2=%{}=0x{:x?}, imm={}, npc=0x{:x?}", fct, rs1, pf2, rs2, pf2, imm as i64, *pc + imm);
+            //println!("branch {}, 1=%{}={:x?},2=%{}=0x{:x?}, imm={}, npc=0x{:x?}", fct, rs1, pf1, rs2, pf2, imm as i64, *pc + imm);
             match fct {
                 0 => {
                     if (pf1 == pf2) {
@@ -612,10 +617,10 @@ fn main() {
                     match registers[17] {
                         64 => {
                             let fd = registers[10];
-                            let ptr = registers[11];
+                            let ptr: *mut libc::c_void = adt(registers[11], mem);
                             let n = registers[12];
-                            let mut v: Vec<u8> = Vec::with_capacity(n as usize);
-                            for i in 0..n>>3 {
+                            //let mut v: Vec<u8> = Vec::with_capacity(n as usize);
+                            /*for i in 0..n>>3 {
                                 if let Some(a) = mem.readdword(ptr+i<<3) {
                                     v.extend_from_slice(&a.to_le_bytes());
                                 } else {
@@ -628,8 +633,8 @@ fn main() {
                                 } else {
                                     unsafe {libc::raise(11);}
                                 }
-                            }
-                            unsafe {libc::write(fd as i32, v.into_raw_parts().0 as *const libc::c_void, n as usize);}
+                            }*/
+                            unsafe {libc::write(fd as i32, ptr, n as usize);}
                         }
                         93 => std::process::exit(registers[10] as i32),
                         _ => unimplemented!(),
@@ -659,11 +664,17 @@ fn main() {
     // TODO split into threads for multiprocessing
     loop {
         // No compressed instruction support
-        let isn = match mema.readword(pc) {
-            Some(v) => v,
-            None => unsafe { libc::raise(11) as u32 },
-        };
+        let isn = unsafe {*(adt(pc, mema) as *const u32)};
         //println!("pc=0x{:x?}", pc);
-        opcode_table[isn as usize & 0x7f](isn, &mut mema, &mut registers, &mut pc);
+        opcode_table[isn as usize & 0x7f](isn, mema, &mut registers, &mut pc);
     }
+}
+
+#[inline(always)]
+fn adt(addr: u64, mema: *mut libc::c_void) -> *mut libc::c_void {
+    (if addr & (1 << 38) != 0 {
+        unsafe {mema.byte_offset((addr - stack_bottom) as isize)}
+    } else {
+        unsafe {mema.byte_offset(addr as isize)}
+    }) as *mut libc::c_void
 }
