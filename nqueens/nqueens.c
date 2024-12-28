@@ -4,7 +4,7 @@ int ld[30] = { 0 };
 int rd[30] = { 0 };
 int cl[30] = { 0 };
 
-#define N 28
+#define N 27
 
 void write_stdout(char *s, int n) {
     asm volatile (

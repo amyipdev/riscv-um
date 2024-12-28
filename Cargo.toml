@@ -18,3 +18,6 @@ libc = "0.2.164"
 
 [workspace]
 members = ["emu_tests/riscv64gc/compiler"]
+
+[profile.release]
+debug = true
